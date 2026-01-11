@@ -1,0 +1,306 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_CPC357",
+      "label": "CPC357",
+      "type": "datasource",
+      "pluginId": "influxdb"
+    }
+  ],
+  "title": "Smart Locker Live Dashboard",
+  "timezone": "",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Locker State",
+      "datasource": "${DS_CPC357}",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"CPC357_Project\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\n  |> filter(fn: (r) => r._field == \"state\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "EMPTY": {
+                  "text": "EMPTY",
+                  "color": "green"
+                },
+                "OCCUPIED": {
+                  "text": "OCCUPIED",
+                  "color": "yellow"
+                },
+                "IN_USE": {
+                  "text": "IN_USE",
+                  "color": "blue"
+                },
+                "ALERT": {
+                  "text": "ALERT",
+                  "color": "red"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "wideLayout": true
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Door",
+      "datasource": "${DS_CPC357}",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"CPC357_Project\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\n  |> filter(fn: (r) => r._field == \"door_open\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "CLOSED",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "OPEN",
+                  "color": "red"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "wideLayout": true
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Human",
+      "datasource": "${DS_CPC357}",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"CPC357_Project\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\n  |> filter(fn: (r) => r._field == \"human_detected\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "NO",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "YES",
+                  "color": "green"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "wideLayout": true
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Distance (cm)",
+      "datasource": "${DS_CPC357}",
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"CPC357_Project\")\n  |> range(start: -30m)\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\n  |> filter(fn: (r) => r._field == \"distance_cm\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cm",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "auto"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 12
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "Alert Countdown (s)",
+      "datasource": "${DS_CPC357}",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"CPC357_Project\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\n  |> filter(fn: (r) => r._field == \"alert_remaining_s\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 60,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 30
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "table",
+      "title": "Recent States",
+      "datasource": "${DS_CPC357}",
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"CPC357_Project\")\n  |> range(start: -30m)\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\n  |> filter(fn: (r) => r._field == \"state\")"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "_field": true,
+              "_measurement": true,
+              "host": true,
+              "topic": true
+            },
+            "indexByName": {
+              "_time": 0,
+              "_value": 1
+            },
+            "renameByName": {
+              "_time": "time",
+              "_value": "state"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
