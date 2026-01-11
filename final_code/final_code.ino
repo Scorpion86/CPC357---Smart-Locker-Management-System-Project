@@ -33,14 +33,14 @@ unsigned long lastMotionTime = 0;
 
 // ===== WIFI/MQTT =====
 const char* WIFI_SSID = "USMSecure";
-const char* WIFI_IDENTITY = "muvenddran@student.usm.my";
-const char* WIFI_USERNAME = "muvenddran@student.usm.my";
-const char* WIFI_PASSWORD = "Junior4002#";
+const char* WIFI_IDENTITY = "";
+const char* WIFI_USERNAME = "";
+const char* WIFI_PASSWORD = "";
 
-const char* MQTT_HOST = "34.126.155.177";
+const char* MQTT_HOST = "";
 const int MQTT_PORT = 1883;
 const char* MQTT_USER = "lockeruser";
-const char* MQTT_PASS = "Muven4002#";
+const char* MQTT_PASS = "";
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
