@@ -10,6 +10,9 @@ Project Overview
 Repository Contents
 - final_code/final_code.ino: ESP32 firmware
 - grafana_dashboard.json: live dashboard import file
+- images/grafrana_dashboard.jpg: Grafana live dashboard screenshot
+- images/vm dashbord.jpg: GCP VM instance screenshot
+- images/Influx db.jpg: InfluxDB bucket setup screenshot
 
 Hardware Requirements
 - ESP32 board
@@ -47,14 +50,60 @@ Setup Instructions
 
 2) GCP VM (Mosquitto + InfluxDB + Grafana)
 - Create a GCP VM (Ubuntu 22.04).
-- Install Mosquitto, InfluxDB, Telegraf, and Grafana.
-- Configure Mosquitto user/password authentication.
-- Configure Telegraf to subscribe to MQTT and write to InfluxDB.
+- Open firewall ports: 1883 (MQTT), 3000 (Grafana), 8086 (InfluxDB setup).
+- Install Mosquitto:
+  - sudo apt update
+  - sudo apt install -y mosquitto mosquitto-clients
+  - sudo mosquitto_passwd -c /etc/mosquitto/passwd lockeruser
+  - sudo tee /etc/mosquitto/conf.d/locker.conf > /dev/null << 'EOF'
+    listener 1883 0.0.0.0
+    allow_anonymous false
+    password_file /etc/mosquitto/passwd
+    EOF
+  - sudo systemctl restart mosquitto
+  - sudo systemctl enable mosquitto
+- Install InfluxDB, Telegraf, Grafana:
+  - wget -q https://repos.influxdata.com/influxdata-archive_compat.key
+  - sudo gpg --dearmor -o /usr/share/keyrings/influxdata-archive_compat.gpg influxdata-archive_compat.key
+  - echo "deb [signed-by=/usr/share/keyrings/influxdata-archive_compat.gpg] https://repos.influxdata.com/ubuntu jammy stable" | sudo tee /etc/apt/sources.list.d/influxdata.list
+  - sudo mkdir -p /etc/apt/keyrings
+  - wget -qO- https://packages.grafana.com/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/grafana.gpg
+  - echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+  - sudo apt update
+  - sudo apt install -y influxdb2 telegraf grafana
+  - sudo systemctl enable --now influxdb telegraf grafana-server
+- InfluxDB first-time setup:
+  - Open http://<VM_EXTERNAL_IP>:8086
+  - Create org: CPC357
+  - Create bucket: CPC357_Project
+  - Create token for Telegraf and Grafana
+- Configure Telegraf (MQTT -> InfluxDB):
+  - sudo tee /etc/telegraf/telegraf.d/locker_mqtt.conf > /dev/null << 'EOF'
+    [[inputs.mqtt_consumer]]
+      servers = ["tcp://127.0.0.1:1883"]
+      topics = ["locker/telemetry"]
+      username = "lockeruser"
+      password = "YOUR_MQTT_PASSWORD"
+      data_format = "json"
+      json_string_fields = ["state"]
+
+    [[outputs.influxdb_v2]]
+      urls = ["http://127.0.0.1:8086"]
+      token = "YOUR_INFLUX_TOKEN"
+      organization = "CPC357"
+      bucket = "CPC357_Project"
+    EOF
+  - sudo systemctl restart telegraf
 
 3) Grafana Dashboard
 - Open Grafana at http://<VM_EXTERNAL_IP>:3000.
 - Add InfluxDB as a data source.
 - Import grafana_dashboard.json for the live dashboard.
+
+Dashboard Screenshot
+- images/grafrana_dashboard.jpg
+- images/vm dashbord.jpg
+- images/Influx db.jpg
 
 Data Fields
 The ESP32 publishes JSON to MQTT topic locker/telemetry:
